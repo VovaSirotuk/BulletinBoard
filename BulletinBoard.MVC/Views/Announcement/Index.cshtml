@@ -1,0 +1,177 @@
+﻿@model IEnumerable<BulletinBoard.MVC.Models.AnnouncementDto>
+
+@{
+    ViewData["Title"] = "Announcements";
+    var categories = ViewBag.Categories as Dictionary<string, List<string>>;
+}
+
+<section class="jumbotron text-center">
+    <div class="container">
+        <h1 class="jumbotron-heading">Оголошення</h1>
+    </div>
+</section>
+
+<div class="album py-5 bg-light">
+    <div class="container">
+        <div class="row">
+
+            <!-- Sidebar з фільтрами -->
+            <div class="col-md-2">
+                <h5>Фільтри</h5>
+                <select id="categoryFilter" class="form-select mb-2">
+                    <option value="">-- Категорія --</option>
+                    @if (categories != null)
+                    {
+                        foreach (var cat in categories.Keys)
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    }
+                </select>
+
+                <select id="subCategoryFilter" class="form-select mb-4">
+                    <option value="">-- Підкатегорія --</option>
+                </select>
+            </div>
+
+            <!-- Контейнер для оголошень -->
+            <div class="col-md-10">
+                <div id="announcementsContainer" class="row">
+                    @foreach (var item in Model)
+                    {
+                        <div class="col-md-4">
+                            <div class="card mb-4 box-shadow">
+                                <p class="course-header text-center">@item.Title</p>
+                                <div class="card-body">
+                                    <p class="card-text">@item.Description</p>
+                                    <div class="d-flex flex-column">
+                                        <div class="mb-2">
+                                            <small class="text-muted">@item.CreatedDate.ToShortDateString()</small>
+                                            <small class="text-muted">@item.Status</small>
+                                        </div>
+                                        @if (User.Identity.IsAuthenticated)
+                                        {
+                                            <div>
+                                                <a asp-controller="Announcement" asp-action="Update" asp-route-id="@item.Id" class="btn btn-primary me-2">Змінити</a>
+                                                <form asp-controller="Announcement" asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger delete">Видалити</button>
+                                                </form>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        margin: 0px 0px 15px 0px;
+    }
+
+    .card-text {
+        height: 100px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.getElementById("categoryFilter").addEventListener("change", function () {
+            var category = this.value;
+            updateSubCategories(category);
+            loadFilteredAnnouncements();
+        });
+
+        document.getElementById("subCategoryFilter").addEventListener("change", function () {
+            loadFilteredAnnouncements();
+        });
+
+        function updateSubCategories(category) {
+            const subcategories = {
+                "Побутова техніка": ["Холодильники", "Пральні машини", "Бойлери", "Печі", "Витяжки", "Мікрохвильові печі"],
+                "Комп’ютерна техніка": ["ПК", "Ноутбуки", "Монітори", "Принтери", "Сканери"],
+                "Смартфони": ["Android смартфони", "iOS/Apple смартфони"],
+                "Інше": ["Одяг", "Взуття", "Аксесуари", "Спортивне обладнання", "Іграшки"]
+            };
+
+            var subCategorySelect = document.getElementById("subCategoryFilter");
+            subCategorySelect.innerHTML = '<option value="">-- Підкатегорія --</option>';
+
+            if (subcategories[category]) {
+                subcategories[category].forEach(function (sub) {
+                    var opt = document.createElement("option");
+                    opt.value = sub;
+                    opt.innerText = sub;
+                    subCategorySelect.appendChild(opt);
+                });
+            }
+        }
+
+        function loadFilteredAnnouncements() {
+            var category = document.getElementById("categoryFilter").value;
+            var subCategory = document.getElementById("subCategoryFilter").value;
+
+            fetch(`/Announcement/Filter?category=${encodeURIComponent(category)}&subCategory=${encodeURIComponent(subCategory)}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("announcementsContainer").innerHTML = html;
+                });
+        }
+    </script>
+}
+
+
+@* @model IEnumerable<BulletinBoard.MVC.Models.AnnouncementDto>
+
+@{
+    ViewData["Title"] = "Announcements";
+}
+
+<section class="jumbotron text-center">
+    <div class="container">
+        <h1 class="jumbotron-heading"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Announcements</font></font></h1>
+        <p class="lead text-muted"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;"></font></font></p>
+    </div>
+</section>
+<div class="album py-5 bg-light">
+
+    <div class="container">
+        <div class="row text-black">
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-4">
+                        <div class="card mb-4 box-shadow">
+                            <p class="course-header text-center">@item.Title</p>
+                            <div class="card-body">
+                                <p class="card-text">@item.Description</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">@item.CreatedDate.ToShortDateString()</small>
+                                    <small class="text-muted">@item.Status</small>
+                                </div>
+
+                                    <div class="">
+                                    <a asp-controller="Announcement" asp-action="Update" asp-route-id="@item.Id" class="btn btn-primary edit me-2">Edit</a>
+                                        <a asp-action="" asp-route-id="@item.Id" class="btn btn-danger delete">Delete</a>
+                                    </div>                             
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                } 
+        </div>
+    </div>
+</div>
+<style>
+    .card{
+        margin: 0px 0px 15px 0px ;
+    }
+   .card-text{
+        height: 100px;
+   }
+</style> *@

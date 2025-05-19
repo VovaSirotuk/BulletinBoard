@@ -1,0 +1,25 @@
+﻿@model IEnumerable<BulletinBoard.MVC.Models.AnnouncementDto>
+
+@foreach (var item in Model)
+{
+    <div class="col-md-4">
+        <div class="card mb-4 box-shadow">
+            <p class="course-header text-center">@item.Title</p>
+            <div class="card-body">
+                <p class="card-text">@item.Description</p>
+                <div class=" class=" d-flex flex-column"">
+                    <div class="mb-2">
+                        <small class="text-muted">@item.CreatedDate.ToShortDateString()</small>
+                        <small class="text-muted">@item.Status</small>
+                    </div>
+                    <div>
+                        <a asp-controller="Announcement" asp-action="Update" asp-route-id="@item.Id" class="btn btn-primary edit me-2">Змінити</a>
+                        <form asp-controller="Announcement" asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger delete">Видалити</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

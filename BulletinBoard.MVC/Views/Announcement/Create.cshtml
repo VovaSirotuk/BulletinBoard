@@ -1,0 +1,93 @@
+﻿@model BulletinBoard.MVC.Models.CreateAnnouncementDto
+@{
+    ViewData["Title"] = "Нове оголошення";
+    var categories = ViewBag.Categories as Dictionary<string, List<string>>;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4>@ViewData["Title"]</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post">
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Заголовок</label>
+                                <input asp-for="Title" class="form-control"/>
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Опис</label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Category" class="form-label">Категорія</label>
+                                <select id="category" asp-for="Category" class="form-select" required>
+                                    <option value="">-- Оберіть категорію --</option>
+                                    @foreach (var cat in categories.Keys)
+                                    {
+                                        <option value="@cat">@cat</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="SubCategory" class="form-label">Підкатегорія</label>
+                                <select id="subCategory" asp-for="SubCategory" class="form-select" required>
+                                    <option value="">-- Оберіть підкатегорію --</option>
+                                </select>
+                                <span asp-validation-for="SubCategory" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">Статус</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="">-- Оберіть статус --</option>
+                                    <option value="Активне">Активне</option>
+                                    <option value="Неактивне">Неактивне</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success px-4">Опублікувати</button>
+                                <a asp-action="Index" class="btn btn-secondary ms-2">Скасувати</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const categorySelect = document.getElementById("category");
+        const subCategorySelect = document.getElementById("subCategory");
+
+        const categories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Categories));
+
+        categorySelect.addEventListener("change", function () {
+            const selectedCategory = this.value;
+            subCategorySelect.innerHTML = '<option value="">-- Оберіть підкатегорію --</option>';
+
+            if (categories[selectedCategory]) {
+                categories[selectedCategory].forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.text = sub;
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        });
+    </script>
+}
